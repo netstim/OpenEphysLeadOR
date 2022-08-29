@@ -71,6 +71,10 @@ public:
 	void loadCustomParametersFromXml(XmlElement *parentElement) override;
 
 private:
+	String getRecordingSitesMsg();
+
+	Array<String> DTTArray;
+	int64 prev_ms;
 };
 
 #endif

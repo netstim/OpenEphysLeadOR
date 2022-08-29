@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
+    prev_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
 }
 
 LeadORPlugin::~LeadORPlugin()
@@ -68,9 +69,27 @@ void LeadORPlugin::handleBroadcastMessage(String message)
 
         if (messageParts[1].equalsIgnoreCase("DistanceToTarget"))
         {
-            broadcastMessage("IGTL:Transform:DistanceToTarget:1:0:0:0:0:1:0:0:0:0:1:" + messageParts[2].toStdString());
+            String msg = "IGTL:Transform:DistanceToTarget:1:0:0:0:0:1:0:0:0:0:1:" + messageParts[2].toStdString();
+            int64 curr_ms = Time::currentTimeMillis();
+            if ((curr_ms - prev_ms) > 4000)
+            {
+                DTTArray.add(messageParts[2]);
+                msg += ";" + getRecordingSitesMsg();
+            }
+            prev_ms = curr_ms;
+            broadcastMessage(msg);
         }
     }
+}
+
+String LeadORPlugin::getRecordingSitesMsg()
+{
+    String msg = "IGTL:Point:RecordingSites";
+    for (int i = 0; i < DTTArray.size(); i++)
+    {
+        msg += ":0,0," + DTTArray[i] + ",name";
+    }
+    return msg;
 }
 
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
