@@ -25,18 +25,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <ProcessorHeaders.h>
 
-
-class ProcessorPlugin : public GenericProcessor
+class LeadORPlugin : public GenericProcessor
 {
 public:
 	/** The class constructor, used to initialize any members. */
-	ProcessorPlugin();
+	LeadORPlugin();
 
 	/** The class destructor, used to deallocate memory */
-	~ProcessorPlugin();
+	~LeadORPlugin();
 
 	/** If the processor has a custom editor, this method must be defined to instantiate it. */
-	AudioProcessorEditor* createEditor() override;
+	AudioProcessorEditor *createEditor() override;
 
 	/** Called every time the settings of an upstream plugin are changed.
 		Allows the processor to handle variations in the channel configuration or any other parameter
@@ -47,7 +46,7 @@ public:
 	/** Defines the functionality of the processor.
 		The process method is called every time a new data buffer is available.
 		Visualizer plugins typically use this method to send data to the canvas for display purposes */
-	void process(AudioBuffer<float>& buffer) override;
+	void process(AudioBuffer<float> &buffer) override;
 
 	/** Handles events received by the processor
 		Called automatically for each received event whenever checkForEvents() is called from
@@ -65,12 +64,13 @@ public:
 
 	/** Saving custom settings to XML. This method is not needed to save the state of
 		Parameter objects */
-	void saveCustomParametersToXml(XmlElement* parentElement) override;
+	void saveCustomParametersToXml(XmlElement *parentElement) override;
 
 	/** Load custom settings from XML. This method is not needed to load the state of
 		Parameter objects*/
-	void loadCustomParametersFromXml(XmlElement* parentElement) override;
+	void loadCustomParametersFromXml(XmlElement *parentElement) override;
 
+private:
 };
 
 #endif

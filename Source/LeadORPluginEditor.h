@@ -20,71 +20,23 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ProcessorPlugin.h"
+#ifndef PROCESSORPLUGINEDITOR_H_DEFINED
+#define PROCESSORPLUGINEDITOR_H_DEFINED
 
-#include "ProcessorPluginEditor.h"
+#include <EditorHeaders.h>
 
-
-ProcessorPlugin::ProcessorPlugin()
-    : GenericProcessor("Plugin Name")
+class LeadORPluginEditor : public GenericEditor
 {
+public:
+	/** Constructor */
+	LeadORPluginEditor(GenericProcessor *parentNode);
 
-}
+	/** Destructor */
+	~LeadORPluginEditor() {}
 
+private:
+	/** Generates an assertion if this class leaks */
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LeadORPluginEditor);
+};
 
-ProcessorPlugin::~ProcessorPlugin()
-{
-
-}
-
-
-AudioProcessorEditor* ProcessorPlugin::createEditor()
-{
-    editor = std::make_unique<ProcessorPluginEditor>(this);
-    return editor.get();
-}
-
-
-void ProcessorPlugin::updateSettings()
-{
-
-
-}
-
-
-void ProcessorPlugin::process(AudioBuffer<float>& buffer)
-{
-
-    checkForEvents(true);
-
-}
-
-
-void ProcessorPlugin::handleTTLEvent(TTLEventPtr event)
-{
-
-}
-
-
-void ProcessorPlugin::handleSpike(SpikePtr event)
-{
-
-}
-
-
-void ProcessorPlugin::handleBroadcastMessage(String message)
-{
-
-}
-
-
-void ProcessorPlugin::saveCustomParametersToXml(XmlElement* parentElement)
-{
-
-}
-
-
-void ProcessorPlugin::loadCustomParametersFromXml(XmlElement* parentElement)
-{
-
-}
+#endif // PROCESSORPLUGINEDITOR_H_DEFINED
