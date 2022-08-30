@@ -72,8 +72,13 @@ public:
 
 private:
 	String getRecordingSitesMsg();
+	String getChannelsValuesMsg();
+
+	int numChannels;
 
 	Array<String> DTTArray;
+	Array<float> valuesArray;
+	Array<String> channelsNamesArray;
 	int64 prev_ms;
 };
 

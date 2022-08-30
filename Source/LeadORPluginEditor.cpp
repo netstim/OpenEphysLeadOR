@@ -27,4 +27,6 @@ LeadORPluginEditor::LeadORPluginEditor(GenericProcessor *parentNode)
 {
 
     desiredWidth = 150;
+
+    addSelectedChannelsParameterEditor("Channels", 10, 108);
 }

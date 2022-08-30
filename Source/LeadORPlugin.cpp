@@ -28,6 +28,9 @@ LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
     prev_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
+
+    addSelectedChannelsParameter(Parameter::STREAM_SCOPE,
+                                 "Channels", "The input channels to analyze");
 }
 
 LeadORPlugin::~LeadORPlugin()
@@ -42,12 +45,40 @@ AudioProcessorEditor *LeadORPlugin::createEditor()
 
 void LeadORPlugin::updateSettings()
 {
+    numChannels = getNumInputs();
+    channelsNamesArray.clear();
+    valuesArray.clear();
+    valuesArray.insertMultiple(0, 0.0, numChannels);
+
+    for (auto stream : getDataStreams())
+    {
+        if ((*stream)["enable_stream"])
+        {
+            for (auto chan : *((*stream)["Channels"].getArray()))
+            {
+                channelsNamesArray.add(getContinuousChannel(int(chan))->getName());
+            }
+        }
+    }
 }
 
 void LeadORPlugin::process(AudioBuffer<float> &buffer)
 {
-
     checkForEvents(true);
+
+    for (auto stream : getDataStreams())
+    {
+        if ((*stream)["enable_stream"])
+        {
+            const uint16 streamId = stream->getStreamId();
+            const uint32 nSamples = getNumSamplesInBlock(streamId);
+
+            for (auto chan : *((*stream)["Channels"].getArray()))
+            {
+                valuesArray.set(DTTArray.size() * numChannels + (int)chan, buffer.getSample(chan, 0));
+            }
+        }
+    }
 }
 
 void LeadORPlugin::handleTTLEvent(TTLEventPtr event)
@@ -73,10 +104,16 @@ void LeadORPlugin::handleBroadcastMessage(String message)
             int64 curr_ms = Time::currentTimeMillis();
             if ((curr_ms - prev_ms) > 4000)
             {
+                if (DTTArray.size() > 0)
+                {
+                    msg += ";" + getRecordingSitesMsg();
+                    msg += ";" + getChannelsValuesMsg();
+                }
                 DTTArray.add(messageParts[2]);
-                msg += ";" + getRecordingSitesMsg();
+                valuesArray.insertMultiple(DTTArray.size() * numChannels, 0.0, numChannels);
             }
             prev_ms = curr_ms;
+            std::cout << "\nsend: " << msg << std::endl;
             broadcastMessage(msg);
         }
     }
@@ -92,6 +129,25 @@ String LeadORPlugin::getRecordingSitesMsg()
     return msg;
 }
 
+String LeadORPlugin::getChannelsValuesMsg()
+{
+    String msg = "IGTL:String:ChannelsValues:";
+
+    for (int i = -1; i < DTTArray.size(); i++)
+    {
+        for (int chan = 0; chan < numChannels; chan++)
+        {
+            if (chan > 0)
+                msg += ",";
+            if (i < 0)
+                msg += channelsNamesArray[chan];
+            else
+                msg += String(valuesArray[i * numChannels + chan], 3, false);
+        }
+        msg += "\n";
+    }
+    return msg;
+}
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
 {
 }
