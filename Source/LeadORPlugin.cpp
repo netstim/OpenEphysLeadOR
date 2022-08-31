@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "LeadORPluginEditor.h"
 
+#include <OpenIGTLinkCommon.h>
+
 LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
@@ -49,6 +51,10 @@ void LeadORPlugin::updateSettings()
     channelsNamesArray.clear();
     valuesArray.clear();
     valuesArray.insertMultiple(0, 0.0, numChannels);
+
+    OpenIGTLinkCommon *c = new OpenIGTLinkCommon();
+    c->test();
+    std::cout << "connected " << c->isConnected() << std::endl;
 
     for (auto stream : getDataStreams())
     {
