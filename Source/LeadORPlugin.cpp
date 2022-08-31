@@ -29,10 +29,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
-    prev_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
 
     addSelectedChannelsParameter(Parameter::STREAM_SCOPE,
                                  "Channels", "The input channels to analyze");
+
+    prev_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
+    OpenIGTLinkCommon *openIGTLinkLogic = new OpenIGTLinkCommon();
 }
 
 LeadORPlugin::~LeadORPlugin()
@@ -51,10 +53,6 @@ void LeadORPlugin::updateSettings()
     channelsNamesArray.clear();
     valuesArray.clear();
     valuesArray.insertMultiple(0, 0.0, numChannels);
-
-    OpenIGTLinkCommon *c = new OpenIGTLinkCommon();
-    c->test();
-    std::cout << "connected " << c->isConnected() << std::endl;
 
     for (auto stream : getDataStreams())
     {
@@ -106,39 +104,42 @@ void LeadORPlugin::handleBroadcastMessage(String message)
 
         if (messageParts[1].equalsIgnoreCase("DistanceToTarget"))
         {
-            String msg = "IGTL:Transform:DistanceToTarget:1:0:0:0:0:1:0:0:0:0:1:" + messageParts[2].toStdString();
+            Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, messageParts[2].getFloatValue());
+            openIGTLinkLogic->sendTransformMessage("DistanceToTarget", *values);
+
             int64 curr_ms = Time::currentTimeMillis();
             if ((curr_ms - prev_ms) > 4000)
             {
                 if (DTTArray.size() > 0)
                 {
-                    msg += ";" + getRecordingSitesMsg();
-                    msg += ";" + getChannelsValuesMsg();
+                    sendRecordingSitesMsg();
+                    sendChannelsValuesMsg();
                 }
                 DTTArray.add(messageParts[2]);
                 valuesArray.insertMultiple(DTTArray.size() * numChannels, 0.0, numChannels);
             }
             prev_ms = curr_ms;
-            std::cout << "\nsend: " << msg << std::endl;
-            broadcastMessage(msg);
         }
     }
 }
 
-String LeadORPlugin::getRecordingSitesMsg()
+void LeadORPlugin::sendRecordingSitesMsg()
 {
-    String msg = "IGTL:Point:RecordingSites";
+    Array<float> *values = new Array<float>();
+
     for (int i = 0; i < DTTArray.size(); i++)
     {
-        msg += ":0,0," + DTTArray[i] + ",name";
+        values->add(DTTArray[i].getFloatValue());
+        values->add(0);
+        values->add(0);
     }
-    return msg;
+
+    openIGTLinkLogic->sendPointMessage("RecordingSites", *values);
 }
 
-String LeadORPlugin::getChannelsValuesMsg()
+void LeadORPlugin::sendChannelsValuesMsg()
 {
-    String msg = "IGTL:String:ChannelsValues:";
-
+    String msg = "";
     for (int i = -1; i < DTTArray.size(); i++)
     {
         for (int chan = 0; chan < numChannels; chan++)
@@ -152,7 +153,7 @@ String LeadORPlugin::getChannelsValuesMsg()
         }
         msg += "\n";
     }
-    return msg;
+    openIGTLinkLogic->sendStringMessage("ChannelsValues", msg);
 }
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
 {

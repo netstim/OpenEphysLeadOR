@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PROCESSORPLUGIN_H_DEFINED
 
 #include <ProcessorHeaders.h>
+#include <OpenIGTLinkCommon.h>
 
 class LeadORPlugin : public GenericProcessor
 {
@@ -71,8 +72,8 @@ public:
 	void loadCustomParametersFromXml(XmlElement *parentElement) override;
 
 private:
-	String getRecordingSitesMsg();
-	String getChannelsValuesMsg();
+	void sendRecordingSitesMsg();
+	void sendChannelsValuesMsg();
 
 	int numChannels;
 
@@ -80,6 +81,8 @@ private:
 	Array<float> valuesArray;
 	Array<String> channelsNamesArray;
 	int64 prev_ms;
+
+	OpenIGTLinkCommon *openIGTLinkLogic;
 };
 
 #endif
