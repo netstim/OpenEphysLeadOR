@@ -64,6 +64,7 @@ void LeadORPlugin::updateSettings()
             }
         }
     }
+    openIGTLinkLogic->sendStringMessage("LeadOR:ChannelsNames", channelsNamesArray.joinIntoString(","));
 }
 
 void LeadORPlugin::process(AudioBuffer<float> &buffer)
@@ -105,7 +106,7 @@ void LeadORPlugin::handleBroadcastMessage(String message)
         if (messageParts[1].equalsIgnoreCase("DistanceToTarget"))
         {
             Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, messageParts[2].getFloatValue());
-            openIGTLinkLogic->sendTransformMessage("DistanceToTarget", *values);
+            openIGTLinkLogic->sendTransformMessage("LeadOR:DTT", *values);
 
             int64 curr_ms = Time::currentTimeMillis();
             if ((curr_ms - prev_ms) > 4000)
@@ -134,7 +135,7 @@ void LeadORPlugin::sendRecordingSitesMsg()
         values->add(0);
     }
 
-    openIGTLinkLogic->sendPointMessage("RecordingSites", *values);
+    openIGTLinkLogic->sendPointMessage("LeadOR:RecordingSite", *values);
 }
 
 void LeadORPlugin::sendChannelsValuesMsg()
@@ -153,7 +154,7 @@ void LeadORPlugin::sendChannelsValuesMsg()
         }
         msg += "\n";
     }
-    openIGTLinkLogic->sendStringMessage("ChannelsValues", msg);
+    openIGTLinkLogic->sendStringMessage("LeadOR:NRMS", msg);
 }
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
 {

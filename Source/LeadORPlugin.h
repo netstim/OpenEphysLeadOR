@@ -79,7 +79,7 @@ private:
 
 	Array<String> DTTArray;
 	Array<float> valuesArray;
-	Array<String> channelsNamesArray;
+	StringArray channelsNamesArray;
 	int64 prev_ms;
 
 	OpenIGTLinkCommon *openIGTLinkLogic;
