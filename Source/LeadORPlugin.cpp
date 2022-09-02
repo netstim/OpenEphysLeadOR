@@ -71,6 +71,9 @@ void LeadORPlugin::process(AudioBuffer<float> &buffer)
 {
     checkForEvents(true);
 
+    if (!initMsgSent)
+        sendInitMsg();
+
     for (auto stream : getDataStreams())
     {
         if ((*stream)["enable_stream"])
@@ -122,6 +125,14 @@ void LeadORPlugin::handleBroadcastMessage(String message)
             prev_ms = curr_ms;
         }
     }
+}
+
+void LeadORPlugin::sendInitMsg()
+{
+    openIGTLinkLogic->sendStringMessage("LeadOR:ChannelsNames", channelsNamesArray.joinIntoString(","));
+    Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 30);
+    openIGTLinkLogic->sendTransformMessage("LeadOR:DTT", *values);
+    initMsgSent = true;
 }
 
 void LeadORPlugin::sendRecordingSitesMsg()

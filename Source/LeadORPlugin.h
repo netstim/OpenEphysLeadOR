@@ -74,7 +74,9 @@ public:
 private:
 	void sendRecordingSitesMsg();
 	void sendChannelsValuesMsg();
+	void sendInitMsg();
 
+	bool initMsgSent = false;
 	int numChannels;
 
 	Array<String> DTTArray;
