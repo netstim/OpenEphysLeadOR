@@ -79,6 +79,8 @@ private:
 	bool initMsgSent = false;
 	int numChannels;
 
+	int recordingSiteID = 0;
+
 	Array<String> DTTArray;
 	Array<float> valuesArray;
 	StringArray channelsNamesArray;

@@ -52,7 +52,6 @@ void LeadORPlugin::updateSettings()
     numChannels = getNumInputs();
     channelsNamesArray.clear();
     valuesArray.clear();
-    valuesArray.insertMultiple(0, 0.0, numChannels);
 
     for (auto stream : getDataStreams())
     {
@@ -74,6 +73,9 @@ void LeadORPlugin::process(AudioBuffer<float> &buffer)
     if (!initMsgSent)
         sendInitMsg();
 
+    if (recordingSiteID < 1)
+        return;
+
     for (auto stream : getDataStreams())
     {
         if ((*stream)["enable_stream"])
@@ -81,9 +83,11 @@ void LeadORPlugin::process(AudioBuffer<float> &buffer)
             const uint16 streamId = stream->getStreamId();
             const uint32 nSamples = getNumSamplesInBlock(streamId);
 
+            valuesArray.set((DTTArray.size() - 1) * (numChannels + 1), recordingSiteID);
+
             for (auto chan : *((*stream)["Channels"].getArray()))
             {
-                valuesArray.set(DTTArray.size() * numChannels + (int)chan, buffer.getSample(chan, 0));
+                valuesArray.set((DTTArray.size() - 1) * (numChannels + 1) + (int)chan + 1, buffer.getSample(chan, 0));
             }
         }
     }
@@ -119,8 +123,9 @@ void LeadORPlugin::handleBroadcastMessage(String message)
                     sendRecordingSitesMsg();
                     sendChannelsValuesMsg();
                 }
+                recordingSiteID++;
                 DTTArray.add(messageParts[2]);
-                valuesArray.insertMultiple(DTTArray.size() * numChannels, 0.0, numChannels);
+                valuesArray.insertMultiple(DTTArray.size() * (numChannels + 1), 0.0, numChannels);
             }
             prev_ms = curr_ms;
         }
@@ -151,20 +156,22 @@ void LeadORPlugin::sendRecordingSitesMsg()
 
 void LeadORPlugin::sendChannelsValuesMsg()
 {
-    String msg = "";
-    for (int i = -1; i < DTTArray.size(); i++)
+    String msg = "RecordingSiteID";
+    for (int chan = 0; chan < numChannels; chan++)
+        msg += "," + channelsNamesArray[chan];
+    msg += "\n";
+
+    for (int i = 0; i < valuesArray.size(); i++)
     {
-        for (int chan = 0; chan < numChannels; chan++)
-        {
-            if (chan > 0)
-                msg += ",";
-            if (i < 0)
-                msg += channelsNamesArray[chan];
-            else
-                msg += String(valuesArray[i * numChannels + chan], 3, false);
-        }
-        msg += "\n";
+        if (i == 0)
+            msg += "";
+        else if (i % (numChannels + 1) == 0)
+            msg += "\n";
+        else
+            msg += ",";
+        msg += String(valuesArray[i], 3, false);
     }
+
     openIGTLinkLogic->sendStringMessage("LeadOR:NRMS", msg);
 }
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
