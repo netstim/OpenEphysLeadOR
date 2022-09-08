@@ -26,19 +26,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OpenIGTLinkCommon.h>
 
+int LeadORPlugin::LeadORPlugInID = 0;
+int LeadORPlugin::RecordingSiteID = 0;
+bool LeadORPlugin::InitialMsgSent = false;
+
 LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
     addBooleanParameter(Parameter::GLOBAL_SCOPE, "Spikes", "Send Spikes through igtlink", false, false);
     addBooleanParameter(Parameter::GLOBAL_SCOPE, "Feature", "Send stream data through igtlink", false, false);
-
     addStringParameter(Parameter::GLOBAL_SCOPE, "Feature_Name", "Name assigned to the feature", "Feature Name", true);
+    addSelectedChannelsParameter(Parameter::STREAM_SCOPE, "Channels", "The input channels to analyze");
 
-    addSelectedChannelsParameter(Parameter::STREAM_SCOPE,
-                                 "Channels", "The input channels to analyze");
-
-    prev_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
+    previous_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
     OpenIGTLinkCommon *openIGTLinkLogic = new OpenIGTLinkCommon();
+
+    leadORPlugInID = LeadORPlugin::LeadORPlugInID++;
 }
 
 LeadORPlugin::~LeadORPlugin()
@@ -53,31 +56,35 @@ AudioProcessorEditor *LeadORPlugin::createEditor()
 
 void LeadORPlugin::updateSettings()
 {
-    numChannels = getNumInputs();
-    channelsNamesArray.clear();
-    valuesArray.clear();
+    NumChannels = getNumInputs();
+    FeatureValues.clear();
+    updateChannelsNames();
+    sendChannelsMsg();
+}
 
+void LeadORPlugin::updateChannelsNames()
+{
+    ChannelsNamesArray.clear();
     for (auto stream : getDataStreams())
     {
         if ((*stream)["enable_stream"])
         {
             for (auto chan : *((*stream)["Channels"].getArray()))
             {
-                channelsNamesArray.add(getContinuousChannel(int(chan))->getName());
+                ChannelsNamesArray.add(getContinuousChannel(int(chan))->getName());
             }
         }
     }
-    openIGTLinkLogic->sendStringMessage("LeadOR:ChannelsNames", channelsNamesArray.joinIntoString(","));
 }
 
 void LeadORPlugin::process(AudioBuffer<float> &buffer)
 {
     checkForEvents(true);
 
-    if (!initMsgSent)
+    if (!LeadORPlugin::InitialMsgSent)
         sendInitMsg();
 
-    if (recordingSiteID < 1)
+    if (LeadORPlugin::RecordingSiteID < 1)
         return;
 
     for (auto stream : getDataStreams())
@@ -87,11 +94,13 @@ void LeadORPlugin::process(AudioBuffer<float> &buffer)
             const uint16 streamId = stream->getStreamId();
             const uint32 nSamples = getNumSamplesInBlock(streamId);
 
-            valuesArray.set((DTTArray.size() - 1) * (numChannels + 1), recordingSiteID);
+            int currentRecordingSiteIdx = (RecordingSites.size() - 1) * (NumChannels + 1);
+
+            FeatureValues.set(currentRecordingSiteIdx, LeadORPlugin::RecordingSiteID);
 
             for (auto chan : *((*stream)["Channels"].getArray()))
             {
-                valuesArray.set((DTTArray.size() - 1) * (numChannels + 1) + (int)chan + 1, buffer.getSample(chan, 0));
+                FeatureValues.set(currentRecordingSiteIdx + (int)chan + 1, buffer.getSample(chan, 0));
             }
         }
     }
@@ -109,6 +118,9 @@ void LeadORPlugin::handleBroadcastMessage(String message)
 {
     if (message.startsWith("MicroDrive"))
     {
+        if (leadORPlugInID > 0)
+            return;
+
         StringArray messageParts;
         messageParts.addTokens(message, ":", "\"");
         if (messageParts.size() != 3)
@@ -116,42 +128,62 @@ void LeadORPlugin::handleBroadcastMessage(String message)
 
         if (messageParts[1].equalsIgnoreCase("DistanceToTarget"))
         {
-            Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, messageParts[2].getFloatValue());
-            openIGTLinkLogic->sendTransformMessage("LeadOR:DTT", *values);
+            float distanceToTarget = messageParts[2].getFloatValue();
+            sendDistanceToTargetMsg(distanceToTarget);
 
-            int64 curr_ms = Time::currentTimeMillis();
-            if ((curr_ms - prev_ms) > 4000)
+            if (timeElapsedSinceLastIsStable())
             {
-                if (DTTArray.size() > 0)
-                {
-                    sendRecordingSitesMsg();
-                    if (getParameter("Feature")->getValue())
-                        sendChannelsValuesMsg();
-                }
-                recordingSiteID++;
-                DTTArray.add(messageParts[2]);
-                valuesArray.insertMultiple(DTTArray.size() * (numChannels + 1), 0.0, numChannels);
+                sendRecordingSitesMsg();
+                LeadORPlugin::RecordingSiteID++;
+                RecordingSites.add(distanceToTarget);
+                broadcastMessage("LeadOR:SendFeatureData");
             }
-            prev_ms = curr_ms;
         }
     }
+    else if (message.equalsIgnoreCase("LeadOR:SendFeatureData"))
+    {
+        if (getParameter("Feature")->getValue())
+            sendFeatureValuesMsg();
+        FeatureValues.insertMultiple(RecordingSites.size() * (NumChannels + 1), 0.0, NumChannels + 1);
+    }
+}
+
+bool LeadORPlugin::timeElapsedSinceLastIsStable()
+{
+    int64 current_ms = Time::currentTimeMillis();
+    bool isStable = (current_ms - previous_ms) > 4000;
+    previous_ms = current_ms;
+    return isStable;
 }
 
 void LeadORPlugin::sendInitMsg()
 {
-    openIGTLinkLogic->sendStringMessage("LeadOR:ChannelsNames", channelsNamesArray.joinIntoString(","));
-    Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 30);
+    sendChannelsMsg();
+    sendDistanceToTargetMsg(30);
+    LeadORPlugin::InitialMsgSent = true;
+}
+
+void LeadORPlugin::sendChannelsMsg()
+{
+    openIGTLinkLogic->sendStringMessage("LeadOR:ChannelsNames", ChannelsNamesArray.joinIntoString(","));
+}
+
+void LeadORPlugin::sendDistanceToTargetMsg(float distanceToTarget)
+{
+    Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, distanceToTarget);
     openIGTLinkLogic->sendTransformMessage("LeadOR:DTT", *values);
-    initMsgSent = true;
 }
 
 void LeadORPlugin::sendRecordingSitesMsg()
 {
+    if (RecordingSites.size() < 1)
+        return;
+
     Array<float> *values = new Array<float>();
 
-    for (int i = 0; i < DTTArray.size(); i++)
+    for (int i = 0; i < RecordingSites.size(); i++)
     {
-        values->add(DTTArray[i].getFloatValue());
+        values->add(RecordingSites[i]);
         values->add(0);
         values->add(0);
     }
@@ -159,22 +191,22 @@ void LeadORPlugin::sendRecordingSitesMsg()
     openIGTLinkLogic->sendPointMessage("LeadOR:RecordingSite", *values);
 }
 
-void LeadORPlugin::sendChannelsValuesMsg()
+void LeadORPlugin::sendFeatureValuesMsg()
 {
     String msg = "RecordingSiteID";
-    for (int chan = 0; chan < numChannels; chan++)
-        msg += "," + channelsNamesArray[chan];
+    for (int chan = 0; chan < NumChannels; chan++)
+        msg += "," + ChannelsNamesArray[chan];
     msg += "\n";
 
-    for (int i = 0; i < valuesArray.size(); i++)
+    for (int i = 0; i < FeatureValues.size(); i++)
     {
         if (i == 0)
             msg += "";
-        else if (i % (numChannels + 1) == 0)
+        else if (i % (NumChannels + 1) == 0)
             msg += "\n";
         else
             msg += ",";
-        msg += String(valuesArray[i], 3, false);
+        msg += String(FeatureValues[i], 3, false);
     }
 
     openIGTLinkLogic->sendStringMessage(String("LeadOR:") + getParameter("Feature_Name")->getValue(), msg);

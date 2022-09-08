@@ -72,19 +72,27 @@ public:
 	void loadCustomParametersFromXml(XmlElement *parentElement) override;
 
 private:
+	static int LeadORPlugInID;
+	static int RecordingSiteID;
+	static bool InitialMsgSent;
+
+	bool timeElapsedSinceLastIsStable();
+
+	void sendDistanceToTargetMsg(float distanceToTarget);
 	void sendRecordingSitesMsg();
-	void sendChannelsValuesMsg();
+	void sendFeatureValuesMsg();
 	void sendInitMsg();
+	void sendChannelsMsg();
 
-	bool initMsgSent = false;
-	int numChannels;
+	void updateChannelsNames();
 
-	int recordingSiteID = 0;
+	int NumChannels;
+	int leadORPlugInID;
 
-	Array<String> DTTArray;
-	Array<float> valuesArray;
-	StringArray channelsNamesArray;
-	int64 prev_ms;
+	Array<float> RecordingSites;
+	Array<float> FeatureValues;
+	StringArray ChannelsNamesArray;
+	int64 previous_ms;
 
 	OpenIGTLinkCommon *openIGTLinkLogic;
 };
