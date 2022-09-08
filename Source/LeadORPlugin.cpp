@@ -29,6 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
+    addBooleanParameter(Parameter::GLOBAL_SCOPE, "Spikes", "Send Spikes through igtlink", false, false);
+    addBooleanParameter(Parameter::GLOBAL_SCOPE, "Feature", "Send stream data through igtlink", false, false);
+
+    addStringParameter(Parameter::GLOBAL_SCOPE, "Feature_Name", "Name assigned to the feature", "Feature Name", true);
 
     addSelectedChannelsParameter(Parameter::STREAM_SCOPE,
                                  "Channels", "The input channels to analyze");
@@ -121,7 +125,8 @@ void LeadORPlugin::handleBroadcastMessage(String message)
                 if (DTTArray.size() > 0)
                 {
                     sendRecordingSitesMsg();
-                    sendChannelsValuesMsg();
+                    if (getParameter("Feature")->getValue())
+                        sendChannelsValuesMsg();
                 }
                 recordingSiteID++;
                 DTTArray.add(messageParts[2]);
@@ -172,7 +177,7 @@ void LeadORPlugin::sendChannelsValuesMsg()
         msg += String(valuesArray[i], 3, false);
     }
 
-    openIGTLinkLogic->sendStringMessage("LeadOR:NRMS", msg);
+    openIGTLinkLogic->sendStringMessage(String("LeadOR:") + getParameter("Feature_Name")->getValue(), msg);
 }
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
 {

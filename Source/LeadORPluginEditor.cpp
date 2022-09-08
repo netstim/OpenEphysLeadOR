@@ -26,7 +26,10 @@ LeadORPluginEditor::LeadORPluginEditor(GenericProcessor *parentNode)
     : GenericEditor(parentNode)
 {
 
-    desiredWidth = 150;
+    desiredWidth = 200;
 
+    addCheckBoxParameterEditor("Feature", 10, 22);
+    addTextBoxParameterEditor("Feature_Name", 90, 22);
+    addCheckBoxParameterEditor("Spikes", 10, 62);
     addSelectedChannelsParameterEditor("Channels", 10, 108);
 }
