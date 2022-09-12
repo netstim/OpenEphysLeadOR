@@ -32,4 +32,68 @@ LeadORPluginEditor::LeadORPluginEditor(GenericProcessor *parentNode)
     addTextBoxParameterEditor("Feature_Name", 90, 22);
     addCheckBoxParameterEditor("Spikes", 10, 62);
     addSelectedChannelsParameterEditor("Channels", 10, 108);
+
+    // add igtlink button
+    igtLinkButton = new UtilityButton("IGTLink", Font("Small Text", 13, Font::plain));
+    igtLinkButton->setRadius(3.0f);
+    igtLinkButton->setBounds(100, 108, 80, 20);
+    igtLinkButton->addListener(this);
+    igtLinkButton->setTooltip("IGTLink connection");
+    addAndMakeVisible(igtLinkButton);
+}
+
+void LeadORPluginEditor::buttonClicked(Button *button)
+{
+    if (button == igtLinkButton)
+    {
+        LeadORPlugin *processor = (LeadORPlugin *)getProcessor();
+        auto *igtlConnection = new IGTLConnectionPopUp(processor);
+
+        CallOutBox &myBox = CallOutBox::launchAsynchronously(std::unique_ptr<Component>(igtlConnection),
+                                                             button->getScreenBounds(),
+                                                             nullptr);
+    }
+}
+
+IGTLConnectionPopUp::IGTLConnectionPopUp(LeadORPlugin *processor)
+{
+    leadORProcessor = processor;
+    bool connected = leadORProcessor->openIGTLinkLogic->isConnected();
+
+    portEditor = new TextEditor("Port", 0);
+    portEditor->setBounds(10, 3, 80, 20);
+    portEditor->setTooltip("");
+    portEditor->setEnabled(connected ? false : true);
+    portEditor->setText(String(leadORProcessor->openIGTLinkLogic->currentPort));
+    addAndMakeVisible(portEditor);
+
+    connectButton = new UtilityButton(connected ? "Disconnect" : "Connect", Font("Small Text", 13, Font::plain));
+    connectButton->setRadius(3.0f);
+    connectButton->setBounds(10, 28, 80, 20);
+    connectButton->addListener(this);
+    connectButton->setTooltip("");
+    addAndMakeVisible(connectButton);
+
+    setSize(100, 50);
+    setColour(ColourSelector::backgroundColourId, Colours::transparentBlack);
+}
+
+void IGTLConnectionPopUp::buttonClicked(Button *button)
+{
+    if (button == connectButton)
+    {
+        bool connected = false;
+        if (connectButton->getLabel().equalsIgnoreCase("Connect"))
+        {
+            connected = leadORProcessor->openIGTLinkLogic->startIGTLinkConnection(portEditor->getText().getIntValue());
+            if (connected)
+                leadORProcessor->openIGTLinkLogic->currentPort = portEditor->getText().getIntValue();
+        }
+        else
+        {
+            leadORProcessor->openIGTLinkLogic->closeConnection();
+        }
+        connectButton->setLabel(connected ? "Disconnect" : "Connect");
+        portEditor->setEnabled(connected ? false : true);
+    }
 }

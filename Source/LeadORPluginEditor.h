@@ -25,7 +25,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <EditorHeaders.h>
 
-class LeadORPluginEditor : public GenericEditor
+#include "LeadORPlugin.h"
+
+class LeadORPluginEditor : public GenericEditor,
+						   public Button::Listener
 {
 public:
 	/** Constructor */
@@ -34,9 +37,32 @@ public:
 	/** Destructor */
 	~LeadORPluginEditor() {}
 
+	/** Respond to button clicks*/
+	void buttonClicked(Button *button);
+
 private:
+	ScopedPointer<UtilityButton> igtLinkButton;
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LeadORPluginEditor);
+};
+
+class IGTLConnectionPopUp : public Component,
+							public Button::Listener
+{
+public:
+	/** Constructor */
+	IGTLConnectionPopUp(LeadORPlugin *processor);
+
+	/** Destructor */
+	~IGTLConnectionPopUp() {}
+
+	/** Respond to button clicks*/
+	void buttonClicked(Button *button);
+
+private:
+	LeadORPlugin *leadORProcessor;
+	ScopedPointer<UtilityButton> connectButton;
+	ScopedPointer<TextEditor> portEditor;
 };
 
 #endif // PROCESSORPLUGINEDITOR_H_DEFINED

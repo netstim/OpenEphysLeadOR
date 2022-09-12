@@ -71,6 +71,8 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement *parentElement) override;
 
+	OpenIGTLinkCommon *openIGTLinkLogic;
+
 private:
 	static int LeadORPlugInID;
 	static int RecordingSiteID;
@@ -93,8 +95,6 @@ private:
 	Array<float> FeatureValues;
 	StringArray ChannelsNamesArray;
 	int64 previous_ms;
-
-	OpenIGTLinkCommon *openIGTLinkLogic;
 };
 
 #endif
