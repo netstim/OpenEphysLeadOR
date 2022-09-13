@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "LeadORPluginEditor.h"
 
-#include <OpenIGTLinkCommon.h>
+#include <OpenEphysIGTLink.h>
 
 int LeadORPlugin::LeadORPlugInID = 0;
 int LeadORPlugin::RecordingSiteID = 0;
@@ -39,7 +39,7 @@ LeadORPlugin::LeadORPlugin()
     addSelectedChannelsParameter(Parameter::STREAM_SCOPE, "Channels", "The input channels to analyze");
 
     previous_ms = Time::currentTimeMillis(); // TODO: when strat aquisition
-    OpenIGTLinkCommon *openIGTLinkLogic = new OpenIGTLinkCommon();
+    OpenIGTLinkLogic *openIGTLinkLogic = new OpenIGTLinkLogic();
 
     leadORPlugInID = LeadORPlugin::LeadORPlugInID++;
 }

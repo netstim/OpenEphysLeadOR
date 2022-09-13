@@ -92,26 +92,6 @@ foreach(src_file IN ITEMS ${SRC_FILES})
 	source_group("${group_name}" FILES "${src_file}")
 endforeach()
 
-# additional libraries, if needed
-# find_package(LIBNAME)
-# or
-# find_library(LIBNAME_LIBRARIES NAMES libname)
-# find_path(LIBNAME_INCLUDE_DIRS includefile.h)
-#
-# target_link_libraries(${PLUGIN_NAME} ${LIBNAME_LIBRARIES})
-# target_include_directories(${PLUGIN_NAME} PRIVATE ${LIBNAME_INCLUDE_DIRS})
-find_package(OpenIGTLink REQUIRED)
-
-include(
-	${OpenIGTLink_USE_FILE}
-)
-
-include_directories(
-	${OpenIGTLink_INCLUDE_DIRS}
-)
-
-target_link_libraries(${PLUGIN_NAME} OpenIGTLink)
-
 # Open Ephys common libraries
 include(link_open_ephys_lib.cmake)
-link_open_ephys_lib(${PLUGIN_NAME} OpenEphysIGTLinkCommon)
+link_open_ephys_lib(${PLUGIN_NAME} OpenEphysIGTLink)

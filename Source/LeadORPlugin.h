@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PROCESSORPLUGIN_H_DEFINED
 
 #include <ProcessorHeaders.h>
-#include <OpenIGTLinkCommon.h>
+#include <OpenEphysIGTLink.h>
 
 class LeadORPlugin : public GenericProcessor
 {
@@ -71,7 +71,7 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement *parentElement) override;
 
-	OpenIGTLinkCommon *openIGTLinkLogic;
+	OpenIGTLinkLogic *openIGTLinkLogic;
 
 private:
 	static int LeadORPlugInID;
