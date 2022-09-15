@@ -46,6 +46,29 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LeadORPluginEditor);
 };
 
+class MySelectedChannelsParameterEditor : public SelectedChannelsParameterEditor
+{
+public:
+	/** Constructor */
+	MySelectedChannelsParameterEditor(Parameter *param, LeadORPlugin *processor) : SelectedChannelsParameterEditor(param)
+	{
+		p = processor;
+	}
+
+	/** Destructor */
+	virtual ~MySelectedChannelsParameterEditor() {}
+
+	/** Responds to changes in the PopupChannelSelector*/
+	void channelStateChanged(Array<int> selectedChannels)
+	{
+		SelectedChannelsParameterEditor::channelStateChanged(selectedChannels);
+		p->updateSettings();
+	};
+
+private:
+	LeadORPlugin *p;
+};
+
 class IGTLConnectionPopUp : public Component,
 							public Button::Listener
 {

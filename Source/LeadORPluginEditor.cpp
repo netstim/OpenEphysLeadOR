@@ -31,7 +31,11 @@ LeadORPluginEditor::LeadORPluginEditor(GenericProcessor *parentNode)
     addCheckBoxParameterEditor("Feature", 10, 22);
     addTextBoxParameterEditor("Feature_Name", 90, 22);
     addCheckBoxParameterEditor("Spikes", 10, 62);
-    addSelectedChannelsParameterEditor("Channels", 10, 108);
+
+    LeadORPlugin *processor = (LeadORPlugin *)getProcessor();
+    Parameter *param = processor->getParameter("Channels");
+    MySelectedChannelsParameterEditor *channelsSelector = new MySelectedChannelsParameterEditor(param, processor);
+    addCustomParameterEditor(channelsSelector, 10, 108);
 
     // add igtlink button
     igtLinkButton = new UtilityButton("IGTLink", Font("Small Text", 13, Font::plain));
