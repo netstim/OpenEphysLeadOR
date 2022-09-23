@@ -148,6 +148,33 @@ void LeadORPlugin::handleBroadcastMessage(String message)
     }
 }
 
+String LeadORPlugin::handleConfigMessage(String message)
+{
+    // Available commands:
+    // LOR IGTLCONNECT <port>
+    // LOR IGTLDISCONNECT
+    StringArray messageParts = StringArray::fromTokens(message, " ", "");
+    if (messageParts[0].equalsIgnoreCase("LOR") && (messageParts.size() >= 1))
+    {
+        String command = messageParts[1];
+        if (command.equalsIgnoreCase("IGTLCONNECT") && (messageParts.size() == 3))
+        {
+            int port = messageParts[2].getIntValue();
+            bool connected = openIGTLinkLogic->startIGTLinkConnection(port);
+            return (connected ? "Connected!" : "Unable to connect.");
+        }
+        else if (command.equalsIgnoreCase("IGTLDISCONNECT"))
+        {
+            openIGTLinkLogic->closeConnection();
+        }
+        else
+        {
+            return "Lead-OR unrecognized command: " + command + ".";
+        }
+    }
+    return "Command not recognized.";
+}
+
 bool LeadORPlugin::timeElapsedSinceLastIsStable()
 {
     int64 current_ms = Time::currentTimeMillis();
