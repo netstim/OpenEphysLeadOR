@@ -210,9 +210,9 @@ void LeadORPlugin::sendRecordingSitesMsg()
 
     for (int i = 0; i < RecordingSites.size(); i++)
     {
+        values->add(0);
+        values->add(0);
         values->add(RecordingSites[i]);
-        values->add(0);
-        values->add(0);
     }
 
     openIGTLinkLogic->sendPointMessage("LeadOR:RecordingSite", *values);
