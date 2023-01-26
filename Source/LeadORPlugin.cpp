@@ -236,7 +236,7 @@ void LeadORPlugin::sendFeatureValuesMsg()
         msg += String(FeatureValues[i], 3, false);
     }
 
-    openIGTLinkLogic->sendStringMessage(String("LeadOR:") + getParameter("Feature_Name")->getValue(), msg);
+    openIGTLinkLogic->sendStringMessage(String("LeadOR:") + getParameter("Feature_Name")->getValueAsString(), msg);
 }
 void LeadORPlugin::saveCustomParametersToXml(XmlElement *parentElement)
 {

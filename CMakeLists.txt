@@ -78,11 +78,10 @@ elseif(LINUX)
 elseif(APPLE)
 	set_target_properties(${PLUGIN_NAME} PROPERTIES BUNDLE TRUE)
 	set_property(TARGET ${PLUGIN_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-		"-undefined dynamic_lookup -rpath @loader_path/../../../../shared")
+		"-undefined dynamic_lookup -rpath @loader_path/../../../../shared-api8")
 
-	install(TARGETS ${PLUGIN_NAME} DESTINATION $ENV{HOME}/Library/Application\ Support/open-ephys/PlugIns)
-	set(CMAKE_PREFIX_PATH /opt/local)
-endif()
+		install(TARGETS ${PLUGIN_NAME} DESTINATION $ENV{HOME}/Library/Application\ Support/open-ephys/plugins-api8)
+	endif()
 
 # create filters for vs and xcode
 foreach(src_file IN ITEMS ${SRC_FILES})
