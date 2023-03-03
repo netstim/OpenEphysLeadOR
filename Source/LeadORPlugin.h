@@ -76,27 +76,20 @@ public:
 	OpenIGTLinkLogic *openIGTLinkLogic;
 
 private:
-	static int LeadORPlugInID;
-	static int RecordingSiteID;
 	static bool InitialMsgSent;
 
-	bool timeElapsedSinceLastIsStable();
-
 	void sendDistanceToTargetMsg(float distanceToTarget);
-	void sendRecordingSitesMsg();
 	void sendFeatureValuesMsg();
 	void sendInitMsg();
 	void sendChannelsMsg();
-
 	void updateChannelsNames();
 
 	int NumChannels;
-	int leadORPlugInID;
-
-	Array<float> RecordingSites;
+	float DistanceToTarget;
 	Array<float> FeatureValues;
 	StringArray ChannelsNamesArray;
-	int64 previous_ms;
+	int64 previous_dtt_ms;
+	int64 previous_feature_ms;
 };
 
 #endif
