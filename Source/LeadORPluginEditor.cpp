@@ -30,7 +30,7 @@ LeadORPluginEditor::LeadORPluginEditor(GenericProcessor *parentNode)
 
     addCheckBoxParameterEditor("Feature", 10, 22);
     addTextBoxParameterEditor("Feature_Name", 90, 22);
-    addCheckBoxParameterEditor("Spikes", 10, 62);
+    // addCheckBoxParameterEditor("Spikes", 10, 62);
 
     LeadORPlugin *processor = (LeadORPlugin *)getProcessor();
     Parameter *param = processor->getParameter("Channels");

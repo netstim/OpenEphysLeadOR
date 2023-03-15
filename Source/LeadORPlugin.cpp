@@ -31,7 +31,7 @@ bool LeadORPlugin::InitialMsgSent = false;
 LeadORPlugin::LeadORPlugin()
     : GenericProcessor("Lead-OR")
 {
-    addBooleanParameter(Parameter::GLOBAL_SCOPE, "Spikes", "Send Spikes through igtlink", false, false);
+    // addBooleanParameter(Parameter::GLOBAL_SCOPE, "Spikes", "Send Spikes through igtlink", false, false);
     addBooleanParameter(Parameter::GLOBAL_SCOPE, "Feature", "Send stream data through igtlink", false, false);
     addStringParameter(Parameter::GLOBAL_SCOPE, "Feature_Name", "Name assigned to the feature", "Feature Name", true);
     addSelectedChannelsParameter(Parameter::STREAM_SCOPE, "Channels", "The input channels to analyze");
