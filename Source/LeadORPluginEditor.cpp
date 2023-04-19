@@ -28,8 +28,9 @@ LeadORPluginEditor::LeadORPluginEditor(GenericProcessor *parentNode)
 
     desiredWidth = 200;
 
-    addCheckBoxParameterEditor("Feature", 10, 22);
-    addTextBoxParameterEditor("Feature_Name", 90, 22);
+    addCheckBoxParameterEditor("Feature", 10, 62);
+    addTextBoxParameterEditor("Feature_Name", 90, 62);
+    addTextBoxParameterEditor("Distance_To_Target", 10, 22);
     // addCheckBoxParameterEditor("Spikes", 10, 62);
 
     LeadORPlugin *processor = (LeadORPlugin *)getProcessor();

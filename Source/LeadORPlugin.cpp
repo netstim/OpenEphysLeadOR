@@ -34,6 +34,7 @@ LeadORPlugin::LeadORPlugin()
     // addBooleanParameter(Parameter::GLOBAL_SCOPE, "Spikes", "Send Spikes through igtlink", false, false);
     addBooleanParameter(Parameter::GLOBAL_SCOPE, "Feature", "Send stream data through igtlink", false, false);
     addStringParameter(Parameter::GLOBAL_SCOPE, "Feature_Name", "Name assigned to the feature", "Feature Name", true);
+    addStringParameter(Parameter::GLOBAL_SCOPE, "Distance_To_Target", "Micro Drive distance to target", "Distance To Target", true);
     addSelectedChannelsParameter(Parameter::STREAM_SCOPE, "Channels", "The input channels to analyze");
 
     OpenIGTLinkLogic *openIGTLinkLogic = new OpenIGTLinkLogic();
@@ -129,6 +130,7 @@ void LeadORPlugin::handleBroadcastMessage(String message)
         {
             DistanceToTarget = messageParts[2].getFloatValue();
             sendDistanceToTargetMsg(DistanceToTarget);
+            getParameter("Distance_To_Target")->setNextValue(messageParts[2]);
 
             if (!FeatureValues.isEmpty() && getParameter("Feature")->getValue())
                 sendFeatureValuesMsg();
