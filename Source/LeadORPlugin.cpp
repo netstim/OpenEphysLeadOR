@@ -183,9 +183,9 @@ void LeadORPlugin::sendChannelsMsg()
     openIGTLinkLogic->sendStringMessage("LeadOR:ChannelsNames", ChannelsNamesArray.joinIntoString(","));
 }
 
-void LeadORPlugin::sendDistanceToTargetMsg(float DistanceToTarget)
+void LeadORPlugin::sendDistanceToTargetMsg(float distanceToTarget)
 {
-    Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, DistanceToTarget);
+    Array<float> *values = new Array<float>(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, distanceToTarget);
     openIGTLinkLogic->sendTransformMessage("LeadOR:DTT", *values);
 }
 
