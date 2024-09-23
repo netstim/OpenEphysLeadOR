@@ -1,10 +1,18 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15)
 
 if(NOT DEFINED GUI_BASE_DIR)
 	if(DEFINED ENV{GUI_BASE_DIR})
 		set(GUI_BASE_DIR $ENV{GUI_BASE_DIR})
 	else()
 		set(GUI_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../plugin-GUI)
+	endif()
+endif()
+
+if(NOT DEFINED OpenEphysIGTLink_DIR)
+	if(DEFINED ENV{OpenEphysIGTLink_DIR})
+		set(OpenEphysIGTLink_DIR $ENV{OpenEphysIGTLink_DIR})
+	else()
+		set(OpenEphysIGTLink_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../OpenEphysIGTLink)
 	endif()
 endif()
 
@@ -47,7 +55,7 @@ else()
 endif()
 
 target_compile_features(${PLUGIN_NAME} PUBLIC cxx_auto_type cxx_generalized_initializers cxx_std_17)
-target_include_directories(${PLUGIN_NAME} PUBLIC ${GUI_BASE_DIR}/JuceLibraryCode ${GUI_BASE_DIR}/JuceLibraryCode/modules ${GUI_BASE_DIR}/Plugins/Headers ${GUI_BASE_DIR}/Source/Editors/Parameter ${GUI_COMMONLIB_DIR}/include)
+target_include_directories(${PLUGIN_NAME} PUBLIC ${GUI_BASE_DIR}/JuceLibraryCode ${GUI_BASE_DIR}/JuceLibraryCode/modules ${GUI_BASE_DIR}/Plugins/Headers ${GUI_BASE_DIR}/Source/Editors/Parameter ${GUI_COMMONLIB_DIR}/include ${OpenEphysIGTLink_DIR}/Source ${OpenEphysIGTLink_DIR}/libs/windows/include)
 
 set(GUI_BIN_DIR ${GUI_BASE_DIR}/Build/${CONFIGURATION_FOLDER})
 
@@ -61,7 +69,7 @@ endif()
 
 # Libraries and compiler options
 if(MSVC)
-	target_link_libraries(${PLUGIN_NAME} ${GUI_BIN_DIR}/open-ephys.lib)
+	target_link_libraries(${PLUGIN_NAME} ${GUI_BIN_DIR}/open-ephys.lib ${OpenEphysIGTLink_DIR}/Build/${CONFIGURATION_FOLDER}/OpenEphysIGTLink.lib)
 	target_compile_options(${PLUGIN_NAME} PRIVATE /sdl- /W0)
 
 	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/plugins CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
@@ -90,7 +98,3 @@ foreach(src_file IN ITEMS ${SRC_FILES})
 	string(REPLACE "/" "\\" group_name "${src_path_rel}")
 	source_group("${group_name}" FILES "${src_file}")
 endforeach()
-
-# Open Ephys common libraries
-include(link_open_ephys_lib.cmake)
-link_open_ephys_lib(${PLUGIN_NAME} OpenEphysIGTLink)
